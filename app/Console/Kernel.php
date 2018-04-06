@@ -5,6 +5,7 @@ namespace App\Console;
 use App\Console\Commands\TjEntryUpdater;
 use App\Console\Commands\TjEntryUpdaterBundle;
 use App\Console\Commands\TjParser;
+use App\Console\Commands\TjUserUpdater;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -18,7 +19,8 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         TjParser::class,
         TjEntryUpdater::class,
-        TjEntryUpdaterBundle::class
+        TjEntryUpdaterBundle::class,
+        TjUserUpdater::class
     ];
 
     /**

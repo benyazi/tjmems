@@ -13,4 +13,5 @@
 
 Auth::routes();
 
+Route::get('/users/{type?}', 'HomeController@users')->name('users.rate');
 Route::get('/{type?}', 'HomeController@rate')->name('rate');
