@@ -6,16 +6,15 @@ use App\Model\Mem;
 use Illuminate\Console\Command;
 use GuzzleHttp\Client;
 
-class TjEntryUpdater extends Command
+class TjEntryUpdaterBundle extends Command
 {
-    const GET_URL = 'https://api.tjournal.ru/v1.3/entry/{ENTRYID}';
-    const GET_BUNDLE_URL = 'https://api.tjournal.ru/v1.3/entry/{ENTRYID}';
+    const GET_BUNDLE_URL = 'https://api.tjournal.ru/v1.3/entry/bundle?ids=';
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'tj:mems';
+    protected $signature = 'tj:updatelikes';
 
     /**
      * The console command description.
@@ -43,34 +42,39 @@ class TjEntryUpdater extends Command
     {
         $client = new Client(['headers' => ['Accept' => 'application/json']]);
         $mems = Mem::query()
-            ->where('name', null)
             ->get();
+        $memsIds = [];
         foreach ($mems as $mem) {
-            $this->getEntryData($client, $mem);
-            $this->info("ENDED GETTING DATA TO - " . $mem->name);
-            sleep(1);
+            if($mem->isMem) {
+                $memsIds[] = $mem->entryId;
+            }
         }
-        $this->info("ENDED UPDATE DATA, count = " . $mems->count());
+        $this->updateLikes($client, $memsIds);
+        $this->info("ENDED UPDATE DATA, count = " . count($memsIds));
     }
 
-    private function getEntryData($client, $entry)
+    private function updateLikes($client, $memsIds)
     {
         /**
          * @var Mem $entry
          */
-        $url = str_replace("{ENTRYID}", $entry->entryId,self::GET_URL);
+        $url = self::GET_BUNDLE_URL . join(",", $memsIds);
         $res = $client->request('GET', $url, []);
         if($res->getStatusCode() == 200) {
             $data = json_decode($res->getBody());
-            $result = $data->result;
-            $entry->setAttribute('likes', $result->likes->summ);
-            $entry->setAttribute('name', $result->title);
-            $entry->setAttribute('entryTitle', $result->title);
-            $entry->setAttribute('commentCount', $result->commentsCount);
-            if(mb_stripos($result->title, "Мем:") !== false) {
-                $entry->setAttribute('ismem', true);
+            $memArray = (array) $data->result;
+            foreach ($memArray as $key => $memData) {
+                $mem = Mem::query()->where('entryId', $key)->first();
+                /**
+                 * @var Mem $mem
+                 */
+                if(!empty($mem)) {
+                    $mem->setAttribute('likes', $memData->likes->summ);
+                    $mem->setAttribute('commentCount', $memData->commentsCount);
+                    $mem->save();
+                }
             }
-            $entry->save();
+
         }
     }
 
