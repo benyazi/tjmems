@@ -34,7 +34,12 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <!-- Left Side Of Navbar -->
                     <ul class="navbar-nav mr-auto">
-
+                        <li>
+                            <a class="nav-link" href="{{route('rate')}}">Рейтинг по лайкам</a>
+                        </li>
+                        <li>
+                            <a class="nav-link" href="{{route('rate', ['type' => 'comments'])}}">Рейтинг по комментариям</a>
+                        </li>
                     </ul>
 
                     <!-- Right Side Of Navbar -->
